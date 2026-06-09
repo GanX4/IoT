@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLYNK I/O — 8-bit Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0a0a1a;
+            --bg2: #12122a;
+            --bg3: #1a1a38;
+            --cyan: #00ffee;
+            --magenta: #ff44cc;
+            --yellow: #ffe600;
+            --orange: #ff8800;
+            --blue: #44aaff;
+            --green: #00ff88;
+            --red: #ff4466;
+            --white: #f0f0ff;
+            --gray: #888aaa;
+        }
+
+        body {
+            background: #05050f;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 32px 16px;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 780px;
+            background: var(--bg);
+            border: 3px solid var(--cyan);
+            padding: 20px;
+        }
+
+        /* ── HEADER ── */
+        .hdr {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--magenta);
+            padding-bottom: 12px;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+
+        .hdr-title {
+            font-size: 13px;
+            color: var(--cyan);
+            letter-spacing: 2px;
+        }
+
+        .hdr-sub {
+            font-size: 7px;
+            color: var(--magenta);
+            margin-top: 8px;
+        }
+
+        .score-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .score-box {
+            background: var(--bg2);
+            border: 2px solid var(--yellow);
+            padding: 5px 10px;
+        }
+
+        .score-lbl {
+            font-size: 6px;
+            color: var(--yellow);
+        }
+
+        .score-val {
+            font-size: 9px;
+            color: var(--white);
+            margin-top: 4px;
+        }
+
+        /* ── TICKER ── */
+        .ticker {
+            font-size: 6px;
+            color: var(--yellow);
+            overflow: hidden;
+            white-space: nowrap;
+            margin-bottom: 14px;
+            background: var(--bg2);
+            padding: 6px 0;
+            border-top: 1px solid var(--yellow);
+            border-bottom: 1px solid var(--yellow);
+        }
+
+        .ticker span {
+            display: inline-block;
+            animation: scroll 22s linear infinite;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* ── GRID ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--bg2);
+            border: 2px solid;
+            padding: 16px;
+        }
+
+        .pin-badge {
+            font-size: 7px;
+            padding: 3px 8px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .card-name {
+            font-size: 8px;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+
+        /* ── TOGGLE BUTTON ── */
+        .pixel-btn {
+            width: 100%;
+            padding: 12px 0;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            border: 2px solid;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: none;
+        }
+
+        .pixel-btn:active {
+            transform: translate(2px, 2px);
+        }
+
+        .pixel-btn.on {
+            background: var(--green);
+            color: #001a0d;
+            border-color: var(--green);
+        }
+
+        .pixel-btn.off {
+            background: var(--bg3);
+            color: var(--gray);
+            border-color: #444466;
+        }
+
+        /* ── SEGMENT BAR ── */
+        .seg-bar {
+            display: flex;
+            gap: 2px;
+            margin: 8px 0 2px;
+        }
+
+        .seg {
+            flex: 1;
+            height: 8px;
+            background: #1e1e3a;
+            border: 1px solid #2a2a4a;
+        }
+
+        .seg.lit-c {
+            background: var(--cyan);
+            border-color: var(--cyan);
+        }
+
+        .seg.lit-y {
+            background: var(--yellow);
+            border-color: var(--yellow);
+        }
+
+        .seg.lit-g {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        /* ── SLIDER ── */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            flex: 1;
+            height: 8px;
+            background: #1e1e3a;
+            border: 2px solid #333355;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--yellow);
+            border: 2px solid var(--white);
+            cursor: pointer;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--yellow);
+            border: 2px solid var(--white);
+            border-radius: 0;
+            cursor: pointer;
+        }
+
+        .num-disp {
+            font-size: 18px;
+            color: var(--yellow);
+            min-width: 56px;
+            text-align: right;
+        }
+
+        /* ── LED ── */
+        .led-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 0;
+        }
+
+        .pixel-led {
+            width: 36px;
+            height: 36px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pixel-led.on {
+            background: var(--green);
+            border-color: var(--white);
+        }
+
+        .pixel-led.off {
+            background: #111122;
+            border-color: #333355;
+        }
+
+        .led-state {
+            font-size: 10px;
+        }
+
+        .led-state.on {
+            color: var(--green);
+        }
+
+        .led-state.off {
+            color: var(--gray);
+        }
+
+        .led-sub {
+            font-size: 6px;
+            color: var(--gray);
+            margin-top: 6px;
+        }
+
+        /* ── MINI BUTTONS ── */
+        .mini-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .mini-btn {
+            flex: 1;
+            padding: 9px 0;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            letter-spacing: 1px;
+            border: 2px solid;
+            cursor: pointer;
+            background: var(--bg3);
+        }
+
+        .mini-btn:active {
+            transform: translate(1px, 1px);
+        }
+
+        .mini-btn.g {
+            color: var(--green);
+            border-color: var(--green);
+        }
+
+        .mini-btn.g:hover {
+            background: var(--green);
+            color: #001a0d;
+        }
+
+        .mini-btn.r {
+            color: var(--red);
+            border-color: var(--red);
+        }
+
+        .mini-btn.r:hover {
+            background: var(--red);
+            color: var(--white);
+        }
+
+        /* ── GAUGE ── */
+        .gauge-big {
+            font-size: 24px;
+            color: var(--orange);
+            text-align: center;
+            margin: 6px 0 10px;
+        }
+
+        .gauge-unit {
+            font-size: 12px;
+            color: var(--white);
+        }
+
+        .gauge-track {
+            height: 20px;
+            background: #111122;
+            border: 2px solid #333355;
+            margin: 6px 0 4px;
+            overflow: hidden;
+        }
+
+        .gauge-bar {
+            height: 100%;
+            background: var(--orange);
+            transition: width 0.3s steps(10);
+        }
+
+        .gauge-txt {
+            font-size: 7px;
+            color: var(--orange);
+            margin-bottom: 10px;
+        }
+
+        /* ── INPUTS ── */
+        .inp-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        input[type=number],
+        input[type=text] {
+            flex: 1;
+            background: var(--bg3);
+            border: 2px solid;
+            color: var(--white);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            padding: 9px;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: #444466;
+        }
+
+        input:focus {
+            border-color: var(--white) !important;
+        }
+
+        .sm-btn {
+            padding: 9px 12px;
+            border: 2px solid;
+            background: var(--bg3);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .sm-btn:hover {
+            filter: brightness(1.3);
+        }
+
+        .sm-btn:active {
+            transform: translate(1px, 1px);
+        }
+
+        /* ── LABEL SCREEN ── */
+        .label-screen {
+            background: #000010;
+            border: 2px solid var(--blue);
+            padding: 12px 16px;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .label-disp {
+            font-size: 12px;
+            color: var(--white);
+            letter-spacing: 2px;
+            word-break: break-all;
+        }
+
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ── ERRORS ── */
+        .err-txt {
+            font-size: 7px;
+            color: var(--red);
+            min-height: 16px;
+            margin-top: 6px;
+        }
+
+        /* ── SYNC BUTTON ── */
+        .sync-btn {
+            background: none;
+            border: 2px solid var(--magenta);
+            color: var(--magenta);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            padding: 5px 12px;
+            cursor: pointer;
+        }
+
+        .sync-btn:hover {
+            background: var(--magenta);
+            color: #000;
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            margin-top: 14px;
+            border-top: 2px solid #222244;
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer span {
+            font-size: 6px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+
+        <!-- HEADER -->
+        <div class="hdr">
+            <div>
+                <div class="hdr-title">BLYNK I/O</div>
+                <div class="hdr-sub">*** IOT CONTROL SYSTEM v1.0 ***</div>
+            </div>
+            <div style="text-align:right">
+                <div class="score-row">
+                    <div class="score-box">
+                        <div class="score-lbl">STATUS</div>
+                        <div class="score-val" id="conn-status">ONLINE</div>
+                    </div>
+                    <div class="score-box">
+                        <div class="score-lbl">TOKEN</div>
+                        <div class="score-val">g7Xy...</div>
+                    </div>
+                </div>
+                <button class="sync-btn" onclick="refreshAll()">&#8635; SYNC</button>
+            </div>
+        </div>
+
+        <!-- TICKER -->
+        <div class="ticker">
+            <span>*** BLYNK IoT DASHBOARD *** PRESS START *** V0 POWER &nbsp;&nbsp; V1 LED &nbsp;&nbsp; V2 LIGHT
+                &nbsp;&nbsp; V3 TEMP &nbsp;&nbsp; V4 MESSAGE *** INSERT COIN TO CONTINUE ***</span>
+        </div>
+
+        <!-- GRID -->
+        <div class="grid">
+
+            <!-- V0 : ปุ่มเปิด/ปิด -->
+            <div class="card" style="border-color:var(--cyan)">
+                <span class="pin-badge" style="background:var(--cyan);color:#001a22">V0</span>
+                <div class="card-name" style="color:var(--cyan)">ปุ่มเปิด / ปิด</div>
+                <button class="pixel-btn off" id="btn-power" onclick="togglePower()">[ OFF ]</button>
+                <div class="seg-bar" id="seg-v0">
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                </div>
+                <div class="err-txt" id="err-v0"></div>
+            </div>
+
+            <!-- V2 : ปรับค่าแสง -->
+            <div class="card" style="border-color:var(--yellow)">
+                <span class="pin-badge" style="background:var(--yellow);color:#1a1400">V2</span>
+                <div class="card-name" style="color:var(--yellow)">ปรับค่าแสง</div>
+                <div class="slider-row">
+                    <input type="range" min="0" max="255" value="0" step="1" id="slider-light"
+                        oninput="onLightInput(this.value)" onchange="setLight(this.value)">
+                    <span class="num-disp" id="slider-light-val">000</span>
+                </div>
+                <div class="seg-bar" id="seg-v2">
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                    <div class="seg"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:6px;color:var(--gray);margin-top:3px">
+                    <span>0</span><span>255</span>
+                </div>
+                <div class="err-txt" id="err-v2"></div>
+            </div>
+
+            <!-- V1 : สถานะการทำงาน LED -->
+            <div class="card" style="border-color:var(--green)">
+                <span class="pin-badge" style="background:var(--green);color:#001a0d">V1</span>
+                <div class="card-name" style="color:var(--green)">สถานะการทำงาน</div>
+                <div class="led-row">
+                    <div class="pixel-led off" id="led-circle"></div>
+                    <div>
+                        <div class="led-state off" id="led-state-text">INACTIVE</div>
+                        <div class="led-sub">LED PIN V1</div>
+                    </div>
+                </div>
+                <div class="mini-btns">
+                    <button class="mini-btn g" onclick="setLed(1)">[ ON ]</button>
+                    <button class="mini-btn r" onclick="setLed(0)">[ OFF ]</button>
+                </div>
+                <div class="err-txt" id="err-v1"></div>
+            </div>
+
+            <!-- V3 : ค่าอุณหภูมิ -->
+            <div class="card" style="border-color:var(--orange)">
+                <span class="pin-badge" style="background:var(--orange);color:#1a0900">V3</span>
+                <div class="card-name" style="color:var(--orange)">ค่าอุณหภูมิ</div>
+                <div class="gauge-big">
+                    <span id="gauge-val">55</span><span class="gauge-unit"> °C</span>
+                </div>
+                <div class="gauge-track">
+                    <div class="gauge-bar" id="gauge-fill" style="width:55%"></div>
+                </div>
+                <div class="gauge-txt" id="gauge-pct">055 / 100</div>
+                <div class="inp-row">
+                    <input type="number" id="temp-input" min="0" max="100" value="55" placeholder="0-100"
+                        style="border-color:var(--orange)">
+                    <button class="sm-btn" onclick="setTemp()"
+                        style="border-color:var(--orange);color:var(--orange)">SET</button>
+                </div>
+                <div class="err-txt" id="err-v3"></div>
+            </div>
+
+            <!-- V4 : การตอบกลับ -->
+            <div class="card full" style="border-color:var(--blue)">
+                <span class="pin-badge" style="background:var(--blue);color:#00082a">V4</span>
+                <div class="card-name" style="color:var(--blue)">การตอบกลับ</div>
+                <div class="label-screen">
+                    <span class="label-disp" id="label-v4">HELLO<span class="blink">_</span></span>
+                </div>
+                <div class="inp-row">
+                    <input type="text" id="label-input" placeholder="ENTER MESSAGE..." value="HELLO"
+                        style="border-color:var(--blue)">
+                    <button class="sm-btn" onclick="sendLabel()"
+                        style="border-color:var(--blue);color:var(--blue)">SEND</button>
+                </div>
+                <div class="err-txt" id="err-v4"></div>
+            </div>
+
+        </div><!-- /grid -->
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <span>blynk.cloud HTTP API</span>
+            <span id="last-sync">LAST SYNC: --:--:--</span>
+        </div>
+
+    </div><!-- /wrap -->
+
+    <script>
+        const TOKEN = 'g7XyuKbMRPaQpG2T152p9n3nomTgECfx';
+        const BASE = 'https://blynk.cloud/external/api';
+
+        function blynkGet(pin) {
+            return fetch(`${BASE}/get?token=${TOKEN}&${pin}`).then(r => r.text());
+        }
+        function blynkSet(pin, val) {
+            return fetch(`${BASE}/update?token=${TOKEN}&${pin}=${encodeURIComponent(val)}`).then(r => r.text());
+        }
+        function showErr(id, msg) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = msg || '';
+        }
+        function updateSync() {
+            const n = new Date();
+            const t = [n.getHours(), n.getMinutes(), n.getSeconds()]
+                .map(x => x.toString().padStart(2, '0')).join(':');
+            document.getElementById('last-sync').textContent = 'LAST SYNC: ' + t;
+        }
+        function updateSegs(barId, val, max, cls) {
+            const bar = document.getElementById(barId);
+            if (!bar) return;
+            const segs = bar.querySelectorAll('.seg');
+            const lit = Math.round((val / max) * segs.length);
+            segs.forEach((s, i) => {
+                s.classList.remove('lit-c', 'lit-y', 'lit-g');
+                if (i < lit) s.classList.add(cls);
+            });
+        }
+
+        /* ── V0 : Power toggle ── */
+        let powerState = 0;
+
+        async function togglePower() {
+            const btn = document.getElementById('btn-power');
+            powerState = powerState === 0 ? 1 : 0;
+            btn.disabled = true;
+            try {
+                await blynkSet('V0', powerState);
+                updatePowerUI(powerState);
+                showErr('err-v0', '');
+            } catch (e) {
+                showErr('err-v0', 'ERR: ' + e.message.substring(0, 24));
+                powerState = powerState === 0 ? 1 : 0;
+            }
+            btn.disabled = false;
+        }
+
+        function updatePowerUI(val) {
+            const btn = document.getElementById('btn-power');
+            updateSegs('seg-v0', val, 1, 'lit-c');
+            if (val == 1) {
+                btn.className = 'pixel-btn on';
+                btn.textContent = '[ ON  ]';
+            } else {
+                btn.className = 'pixel-btn off';
+                btn.textContent = '[ OFF ]';
+            }
+        }
+
+        /* ── V2 : Light slider ── */
+        function onLightInput(v) {
+            const n = Math.round(v);
+            document.getElementById('slider-light-val').textContent = n.toString().padStart(3, '0');
+            updateSegs('seg-v2', n, 255, 'lit-y');
+        }
+
+        async function setLight(v) {
+            try {
+                await blynkSet('V2', Math.round(v));
+                showErr('err-v2', '');
+            } catch (e) {
+                showErr('err-v2', 'ERR: ' + e.message.substring(0, 24));
+            }
+        }
+
+        /* ── V1 : LED status ── */
+        async function setLed(val) {
+            try {
+                await blynkSet('V1', val);
+                updateLedUI(val);
+                showErr('err-v1', '');
+            } catch (e) {
+                showErr('err-v1', 'ERR: ' + e.message.substring(0, 24));
+            }
+        }
+
+        function updateLedUI(val) {
+            const circle = document.getElementById('led-circle');
+            const text = document.getElementById('led-state-text');
+            if (val == 1) {
+                circle.className = 'pixel-led on';
+                text.className = 'led-state on';
+                text.textContent = 'ACTIVE';
+            } else {
+                circle.className = 'pixel-led off';
+                text.className = 'led-state off';
+                text.textContent = 'INACTIVE';
+            }
+        }
+
+        /* ── V3 : Temperature gauge ── */
+        function updateGauge(val) {
+            const v = Math.round(val);
+            document.getElementById('gauge-val').textContent = v.toString().padStart(2, '0');
+            document.getElementById('gauge-fill').style.width = v + '%';
+            document.getElementById('gauge-pct').textContent = v.toString().padStart(3, '0') + ' / 100';
+        }
+
+        async function setTemp() {
+            const val = parseInt(document.getElementById('temp-input').value);
+            if (isNaN(val) || val < 0 || val > 100) {
+                showErr('err-v3', 'ERR: VALUE 0-100 ONLY');
+                return;
+            }
+            try {
+                await blynkSet('V3', val);
+                updateGauge(val);
+                showErr('err-v3', '');
+            } catch (e) {
+                showErr('err-v3', 'ERR: ' + e.message.substring(0, 24));
+            }
+        }
+
+        /* ── V4 : Label message ── */
+        async function sendLabel() {
+            const txt = document.getElementById('label-input').value.trim().toUpperCase();
+            if (!txt) { showErr('err-v4', 'ERR: EMPTY MESSAGE'); return; }
+            try {
+                await blynkSet('V4', txt);
+                document.getElementById('label-v4').innerHTML = txt + '<span class="blink">_</span>';
+                showErr('err-v4', '');
+            } catch (e) {
+                showErr('err-v4', 'ERR: ' + e.message.substring(0, 24));
+            }
+        }
+
+        /* ── SYNC ALL ── */
+        async function refreshAll() {
+            document.getElementById('conn-status').textContent = 'SYNCING...';
+            try {
+                const v0 = await blynkGet('V0');
+                powerState = parseInt(v0) || 0;
+                updatePowerUI(powerState);
+            } catch (e) { }
+            try {
+                const v2 = await blynkGet('V2');
+                const lv = parseInt(v2) || 0;
+                document.getElementById('slider-light').value = lv;
+                onLightInput(lv);
+            } catch (e) { }
+            try {
+                const v1 = await blynkGet('V1');
+                updateLedUI(parseInt(v1) || 0);
+            } catch (e) { }
+            try {
+                const v3 = await blynkGet('V3');
+                const tv = parseInt(v3) || 55;
+                document.getElementById('temp-input').value = tv;
+                updateGauge(tv);
+            } catch (e) { }
+            try {
+                const v4 = await blynkGet('V4');
+                const m = (v4 || 'HELLO').toUpperCase();
+                document.getElementById('label-v4').innerHTML = m + '<span class="blink">_</span>';
+                document.getElementById('label-input').value = m;
+            } catch (e) { }
+            document.getElementById('conn-status').textContent = 'ONLINE';
+            updateSync();
+        }
+
+        /* ── INIT ── */
+        updateGauge(55);
+        refreshAll();
+    </script>
+</body>
+
+</html>
