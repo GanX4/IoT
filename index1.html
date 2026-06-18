@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏡บ้านแสนสุข🏡</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .neon-border {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), inset 0 0 15px rgba(6, 182, 212, 0.05);
+        }
+        .neon-glow-cyan {
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+        .toggle-dot {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        input:checked ~ .toggle-dot {
+            transform: translateX(100%);
+            background: #06b6d4;
+            box-shadow: 0 0 15px #06b6d4;
+        }
+        input:checked ~ .toggle-bg {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: #06b6d4;
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden p-4 md:p-8">
+
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+    <div class="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-cyan-500/5 blur-[150px] rounded-full pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-fuchsia-500/5 blur-[150px] rounded-full pointer-events-none"></div>
+
+    <div class="relative bg-[#111827]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-slate-800 w-full max-w-3xl neon-border">
+        
+        <div class="flex justify-between items-center text-[10px] tracking-[0.2em] text-slate-500 font-mono mb-6 uppercase">
+            <div>SYSTEM: MUTLI-ZONE CTRLE</div>
+            <div id="db-status" class="text-amber-500 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> CONNECTING
+            </div>
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-black uppercase tracking-[0.2em] bg-gradient-to-r from-cyan-400 via-teal-400 to-fuchsia-400 bg-clip-text text-transparent">
+                บ้านแสนสุข
+            </h1>
+            <p class="text-xs text-slate-400 font-mono tracking-widest uppercase mt-1">ระบบควบคุมไฟ LED อัตโนมัติ</p>
+        </div>
+
+        <div class="bg-[#1e1b4b]/30 border border-fuchsia-500/30 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-center sm:text-left">
+                <span class="text-fuchsia-400 font-mono text-xs font-bold tracking-widest block">MASTER CONTROL</span>
+                <span class="text-slate-400 text-sm">เปิด / ปิด ไฟทุกห้องพร้อมกัน</span>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="masterControl(1)" class="flex-1 sm:flex-none px-5 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-900 font-bold font-mono text-xs rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all uppercase tracking-wider">
+                    ALL ON
+                </button>
+                <button onclick="masterControl(0)" class="flex-1 sm:flex-none px-5 py-2 bg-slate-800 hover:bg-slate-700 text-rose-400 border border-rose-500/30 font-bold font-mono text-xs rounded-xl transition-all uppercase tracking-wider">
+                    ALL OFF
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            
+            <div class="bg-[#070a13] border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between items-center text-center">
+                <span class="text-slate-500 text-[10px] font-mono tracking-wider uppercase mb-1">Bedroom</span>
+                <h3 class="text-base font-bold text-slate-300 mb-3">🛏️ ห้องนอน</h3>
+                <div id="status-led1" class="text-xs font-mono text-rose-500 mb-4 uppercase">OFF</div>
+                <label class="flex items-center cursor-pointer select-none">
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-led1" data-field="led1" class="room-toggle sr-only" disabled>
+                        <div class="toggle-bg block bg-slate-900 border-2 border-slate-700 w-16 h-8 rounded-full transition-colors"></div>
+                        <div class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition-transform"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="bg-[#070a13] border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between items-center text-center">
+                <span class="text-slate-500 text-[10px] font-mono tracking-wider uppercase mb-1">Bathroom</span>
+                <h3 class="text-base font-bold text-slate-300 mb-3">🚿 ห้องน้ำ</h3>
+                <div id="status-led2" class="text-xs font-mono text-rose-500 mb-4 uppercase">OFF</div>
+                <label class="flex items-center cursor-pointer select-none">
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-led2" data-field="led2" class="room-toggle sr-only" disabled>
+                        <div class="toggle-bg block bg-slate-900 border-2 border-slate-700 w-16 h-8 rounded-full transition-colors"></div>
+                        <div class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition-transform"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="bg-[#070a13] border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between items-center text-center">
+                <span class="text-slate-500 text-[10px] font-mono tracking-wider uppercase mb-1">Living room</span>
+                <h3 class="text-base font-bold text-slate-300 mb-3">🛋️ ห้องรับแขก</h3>
+                <div id="status-led3" class="text-xs font-mono text-rose-500 mb-4 uppercase">OFF</div>
+                <label class="flex items-center cursor-pointer select-none">
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-led3" data-field="led3" class="room-toggle sr-only" disabled>
+                        <div class="toggle-bg block bg-slate-900 border-2 border-slate-700 w-16 h-8 rounded-full transition-colors"></div>
+                        <div class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition-transform"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="bg-[#070a13] border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between items-center text-center">
+                <span class="text-slate-500 text-[10px] font-mono tracking-wider uppercase mb-1">Kitchen</span>
+                <h3 class="text-base font-bold text-slate-300 mb-3">🍳 ห้องครัว</h3>
+                <div id="status-led4" class="text-xs font-mono text-rose-500 mb-4 uppercase">OFF</div>
+                <label class="flex items-center cursor-pointer select-none">
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-led4" data-field="led4" class="room-toggle sr-only" disabled>
+                        <div class="toggle-bg block bg-slate-900 border-2 border-slate-700 w-16 h-8 rounded-full transition-colors"></div>
+                        <div class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition-transform"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="bg-[#070a13] border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between items-center text-center sm:col-span-2 md:col-span-1">
+                <span class="text-slate-500 text-[10px] font-mono tracking-wider uppercase mb-1">Front of the house</span>
+                <h3 class="text-base font-bold text-slate-300 mb-3">🏡 หน้าบ้าน</h3>
+                <div id="status-led5" class="text-xs font-mono text-rose-500 mb-4 uppercase">OFF</div>
+                <label class="flex items-center cursor-pointer select-none">
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-led5" data-field="led5" class="room-toggle sr-only" disabled>
+                        <div class="toggle-bg block bg-slate-900 border-2 border-slate-700 w-16 h-8 rounded-full transition-colors"></div>
+                        <div class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition-transform"></div>
+                    </div>
+                </label>
+            </div>
+
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-slate-800/60 text-[10px] font-mono text-slate-500 flex justify-between">
+            <div>SECURE PROTOCOL // NO_AUTH</div>
+            <div>V2.0.26</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // คอนฟิกหลักของคุณ
+        const firebaseConfig = {
+            apiKey: "AIzaSyArdcUSimYYEop_hBwZhDThUlUq5uBta9A",
+            authDomain: "iott-ca20f.firebaseapp.com",
+            databaseURL: "https://iott-ca20f-default-rtdb.firebaseio.com",
+            projectId: "iott-ca20f",
+            storageBucket: "iott-ca20f.firebasestorage.app",
+            messagingSenderId: "356180052387",
+            appId: "1:356180052387:web:46f5ef21a02c72855c7216",
+            measurementId: "G-4PB0XF3EBJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const ledDocRef = doc(db, "IoT1", "device1");
+
+        const dbStatus = document.getElementById("db-status");
+        const toggles = document.querySelectorAll(".room-toggle");
+
+        // ฟังก์ชันอัปเดตหน้าตา UI รายห้องเมื่อได้รับข้อมูลสดจาก Firebase
+        function updateRoomUI(field, value) {
+            const toggleInput = document.getElementById(`toggle-${field}`);
+            const statusText = document.getElementById(`status-${field}`);
+            
+            if (!toggleInput || !statusText) return;
+
+            toggleInput.disabled = false; // เปิดปุ่มให้กดได้
+
+            if (value === 1 || value === "1") {
+                toggleInput.checked = true;
+                statusText.innerText = "ACTIVE";
+                statusText.className = "text-xs font-mono text-cyan-400 neon-glow-cyan font-bold";
+            } else {
+                toggleInput.checked = false;
+                statusText.innerText = "STANDBY";
+                statusText.className = "text-xs font-mono text-rose-500 font-bold";
+            }
+        }
+
+        // 1. รับข้อมูลการเปลี่ยนสถานะแบบ Realtime (onSnapshot)
+        onSnapshot(ledDocRef, (snapshot) => {
+            dbStatus.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4]"></span> CONNECTED`;
+            dbStatus.className = "text-cyan-400 flex items-center gap-1.5 font-mono";
+
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                
+                // วนลูปเช็คข้อมูลและแสดงสถานะให้ครบทั้ง 5 ฟิลด์ (led1 - led5)
+                for (let i = 1; i <= 5; i++) {
+                    const fieldName = `led${i}`;
+                    // หากฟิลด์ไม่มีอยู่จริงในฐานข้อมูล ให้กำหนดค่าเริ่มต้นเป็น 0
+                    const fieldValue = data[fieldName] !== undefined ? data[fieldName] : 0;
+                    updateRoomUI(fieldName, fieldValue);
+                }
+            } else {
+                console.error("ไม่พบเอกสาร 'device1' ในคอลเลกชัน 'IoT1'");
+            }
+        }, (error) => {
+            console.error("Firebase Error:", error);
+            dbStatus.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ACCESS DENIED`;
+            dbStatus.className = "text-rose-500 flex items-center gap-1.5 font-mono";
+        });
+
+        // 2. ดักจับการกดสวิตช์รายห้อง เพื่ออัปเดตค่าไปยัง Firestore
+        toggles.forEach(toggle => {
+            toggle.addEventListener("change", async (e) => {
+                const field = e.target.getAttribute("data-field");
+                const newValue = e.target.checked ? 1 : 0;
+
+                try {
+                    await updateDoc(ledDocRef, {
+                        [field]: newValue
+                    });
+                } catch (error) {
+                    console.error("อัปเดตสถานะห้องล้มเหลว:", error);
+                }
+            });
+        });
+
+        // 3. ฟังก์ชัน Master Control (ALL ON / ALL OFF) ฟังก์ชันนี้จะผูกกับ Window ทั่วไปเพื่อให้ปุ่มด้านบนเรียกใช้ได้
+        window.masterControl = async function(value) {
+            try {
+                // อัปเดตแพ็กเกจใหญ่พร้อมกันทั้ง 5 ฟิลด์ในครั้งเดียว
+                await updateDoc(ledDocRef, {
+                    led1: value,
+                    led2: value,
+                    led3: value,
+                    led4: value,
+                    led5: value
+                });
+                console.log(`สั่งการปุ่มทั้งหมดสำเร็จเป็น: ${value}`);
+            } catch (error) {
+                console.error("การสั่งการ Master ล้มเหลว:", error);
+            }
+        }
+    </script>
+</body>
+</html>
